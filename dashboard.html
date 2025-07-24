@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Logistic 2</title>
+  <link rel="icon" href="../../assets/images/favicon.ico" type="image/x-icon" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    @media only screen and (max-width: 767px) {
+      .main-content {
+        max-width: 100%;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  
+  <!-- Include navbar -->
+  <div id="navbar"></div>
+
+  <!-- Main content wrapper -->
+  <div class="flex pt-20">
+    <main class="main-content flex-1 ml-64 mr-24 p-6">
+      <h1 class="text-2xl font-semibold text-gray-800 mb-4">Welcome to Dashboard</h1>
+      <p class="text-gray-600 mb-6">Add your widgets and data here.</p>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <p class="text-gray-700">Dashboard content goes here.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Include navbar.html with JavaScript -->
+<!-- dashboard.html -->
+<script>
+  fetch("navbar.html")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("navbar").innerHTML = data;
+
+      // ✅ INIT JS after navbar is loaded
+      setupNavbarScripts(); // custom function to run navbar logic
+    });
+  
+  function setupNavbarScripts() {
+    const mobileToggle = document.getElementById('mobileSidebarToggle');
+    const collapseBtn = document.getElementById('collapseSidebar');
+    const sidebar = document.getElementById('sidebar-wrapper');
+    const overlay = document.getElementById('sidebar-overlay');
+    const dropdowns = document.querySelectorAll('.animated-dropdown');
+    const bellBtn = document.querySelector('[onclick="toggleNotifications()"]');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const userDropdownBtn = document.getElementById('userDropdownBtn');
+    const userDropdown = document.getElementById('userDropdown');
+
+    let collapsed = false;
+
+    function toggleSidebarMobile() {
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      if (isOpen) {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        dropdowns.forEach(drop => drop.classList.remove('open'));
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+      }
+    }
+
+    mobileToggle?.addEventListener('click', toggleSidebarMobile);
+    overlay?.addEventListener('click', toggleSidebarMobile);
+
+    collapseBtn?.addEventListener('click', () => {
+      collapsed = !collapsed;
+      sidebar.classList.toggle('w-64');
+      sidebar.classList.toggle('w-16');
+      sidebar.classList.toggle('sidebar-collapsed');
+      if (collapsed) {
+        dropdowns.forEach(drop => drop.classList.remove('open'));
+      }
+    });
+
+    window.toggleDropdown = function (id) {
+      if (sidebar.classList.contains('sidebar-collapsed')) {
+        collapseBtn.click();
+        setTimeout(() => {
+          document.getElementById(id)?.classList.add('open');
+        }, 250);
+        return;
+      }
+      const el = document.getElementById(id);
+      if (el) {
+        const isOpen = el.classList.contains('open');
+        dropdowns.forEach(drop => drop.classList.remove('open'));
+        if (!isOpen) el.classList.add('open');
+      }
+    };
+
+    window.toggleNotifications = function () {
+      notificationDropdown.classList.toggle('hidden');
+    };
+
+    window.toggleUserDropdown = function () {
+      userDropdown.classList.toggle('hidden');
+    };
+
+    document.addEventListener('click', function (e) {
+      if (!notificationDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+        notificationDropdown.classList.add('hidden');
+      }
+      if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+        userDropdown.classList.add('hidden');
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

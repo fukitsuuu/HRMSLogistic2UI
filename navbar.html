@@ -1,0 +1,346 @@
+<style>
+    .sidebar-collapsed .sidebar-label-wrapper {
+        max-width: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-label-wrapper {
+        max-width: 100%;
+        opacity: 1;
+        visibility: visible;
+        white-space: wrap;
+        text-align: start;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-icon {
+        width: 1.5rem;
+        min-width: 1.5rem;
+        text-align: center;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .sidebar-dropdown {
+        transition: padding-left 0.5s ease;
+    }
+
+    .sidebar-collapsed .sidebar-dropdown {
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    .tooltip {
+        position: fixed;
+        left: 4.5rem;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-50%);
+        transition: opacity 0.1s ease;
+        z-index: 9999;
+    }
+
+    .sidebar-collapsed .sidebar-icon:hover .tooltip {
+        opacity: 1;
+    }
+
+    .scrollbar-hidden {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-gutter-stable {
+        scrollbar-gutter: stable;
+    }
+
+    .animated-dropdown {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.1s ease;
+    }
+
+    .animated-dropdown.open {
+        max-height: 500px;
+    }
+
+    .dr-notification {
+        width: 500px;
+        height: 600px;
+    }
+
+    @media only screen and (max-width: 767px) {
+        #sidebar-wrapper {
+            width: 100%;
+        }
+
+        .dr-notification {
+            width: 360px;
+            height: 600px;
+            margin-top: 30px;
+            left: 50% !important;
+            transform: translateX(-73%) !important;
+            max-width: 25rem; /* Adjust as needed */
+        }
+    }
+</style>
+
+<!-- Top Navbar -->
+<div class="fixed top-0 left-0 w-full h-20 bg-white/10 backdrop-blur-lg border-b border-white/10 z-60 shadow-sm">
+    <div class="flex items-center justify-start h-full px-4 bg-white">
+        <!-- Mobile Sidebar Toggle -->
+        <button id="mobileSidebarToggle" class="block md:hidden text-black focus:outline-none">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <!-- Desktop Sidebar Collapse Toggle -->
+        <button id="collapseSidebar" class="hidden md:block text-black focus:outline-none ml-4">
+            <svg id="collapseIcon" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3 ml-5 md:ml-20">
+            <img src="../../assets/images/logo.png" alt="Logo" class="h-10 w-10 object-contain" onerror="this.style.display='none'">
+            <span class="text-black text-xl font-semibold">ATIÉRA</span>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="flex items-center space-x-6 ml-auto mr-4 md:mr-20">
+            <!-- Notification -->
+            <div class="relative group">
+                <button onclick="toggleNotifications()" class="relative focus:outline-none h-5 w-5">
+                    <i class="fas fa-bell text-black text-lg"></i>
+                    <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600"></span>
+                </button>
+                <div id="notificationDropdown" class="hidden absolute right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg z-50 dr-notification">
+                    <div class="flex items-center justify-center p-4 text-sm text-gray-600 h-full">
+                        <p id="notificationContent" class="text-center">No notifications</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Avatar -->
+            <div class="relative">
+                <button id="userDropdownBtn" onclick="toggleUserDropdown()" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold focus:outline-none">
+                    <span>U</span> <!-- Static placeholder instead of PHP -->
+                </button>
+                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50 text-sm">
+                <div class="px-4 pt-2 text-gray-800 font-semibold cursor-default">User</div>
+                    <div class="px-4 text-gray-500 cursor-default">System Administrator</div>
+                    <hr class="my-1 border-gray-200">
+                    <a href="profile.html" class="block px-4 py-2 hover:bg-gray-100 text-gray-800">Profile</a>
+                    <a href="logout.html" class="block px-4 py-2 hover:bg-red-100 text-red-600 font-semibold">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar-wrapper" class="fixed top-20 left-0 h-full w-64 transform -translate-x-full md:translate-x-0 bg-white z-50 px-2 border-r border-white/10 text-black transition-transform duration-300 ease-in-out overflow-y-auto overflow-x-hidden scrollbar-hidden scrollbar-gutter-stable">
+    <nav class="space-y-1 mt-10 mb-10 pr-2" id="sidebar-nav">
+        <!-- Dashboard -->
+        <a href="dashboard.html" class="flex items-center px-3 py-2 rounded hover:bg-white/20 <?= $current_page === 'dashboard.php' ? 'bg-white/30' : ''; ?>">
+            <div class="w-full flex items-center">
+                <div class="sidebar-icon pl-2">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="tooltip">Dashboard</span>
+                </div>
+                <div class="sidebar-label-wrapper ml-3">
+                    <span class="sidebar-label">Dashboard</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- FVM -->
+        <div>
+            <button onclick="toggleDropdown('fvm')" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-car"></i>
+                        <span class="tooltip">Fleet & Vehicle Management</span>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Fleet & Vehicle Management</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="fvm" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Vehicle Registration & Inventory</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Maintenance Scheduling & Logs</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Fuel Consumption Tracking</a>
+            </div>
+        </div>
+
+        <!-- VRDS -->
+        <div>
+            <button onclick="toggleDropdown('vrds')" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-calendar-check"></i>
+                        <span class="tooltip">Vehicle Reservation</span>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Vehicle Reservation</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="vrds" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Reservation Request Portal</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Dispatcher Approval & Assignment</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Trip Logging & Confirmation</a>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div>
+            <button onclick="toggleDropdown('performance')" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-id-badge"></i>
+                        <span class="tooltip">Trip Performance</span>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Trip Performance</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="performance" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Driver Profiles & Certification</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Trip Performance Reports</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Incident & Feedback Logging</a>
+            </div>
+        </div>
+
+        <!-- TCAO -->
+        <div>
+            <button onclick="toggleDropdown('tcao')" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="tooltip">Cost Analysis</span>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Cost Analysis</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="tcao" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Cost Breakdown per Trip</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Route Efficiency Analysis</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Fleet Utilization Report</a>
+            </div>
+        </div>
+
+        <!-- Mobile App -->
+        <div>
+            <button onclick="toggleDropdown('mobile')" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span class="tooltip">Mobile Fleet App</span>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Mobile Fleet App</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="mobile" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Real-Time Vehicle Tracker</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Emergency & Alert System</a>
+            </div>
+        </div>
+    </nav>
+</div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black w-full bg-opacity-0 z-20 hidden md:hidden"></div>
+
+<!-- Scripts -->
+<script>
+    /*const mobileToggle = document.getElementById('mobileSidebarToggle');
+    const collapseBtn = document.getElementById('collapseSidebar');
+    const sidebar = document.getElementById('sidebar-wrapper');
+    const overlay = document.getElementById('sidebar-overlay');
+    const dropdowns = document.querySelectorAll('.animated-dropdown');
+    const bellBtn = document.querySelector('[onclick="toggleNotifications()"]');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const userDropdownBtn = document.getElementById('userDropdownBtn');
+    const userDropdown = document.getElementById('userDropdown');
+
+    let collapsed = false;
+
+    // Unified toggle for mobile
+    function toggleSidebarMobile() {
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+
+            // 🚨 CLOSE ALL DROPDOWNS ON MOBILE CLOSE
+            dropdowns.forEach(drop => drop.classList.remove('open'));
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+    }
+
+
+    mobileToggle?.addEventListener('click', toggleSidebarMobile);
+    overlay?.addEventListener('click', toggleSidebarMobile);
+
+    // Desktop toggle
+    collapseBtn?.addEventListener('click', () => {
+        collapsed = !collapsed;
+        sidebar.classList.toggle('w-64');
+        sidebar.classList.toggle('w-16');
+        sidebar.classList.toggle('sidebar-collapsed');
+
+        if (collapsed) {
+            dropdowns.forEach(drop => drop.classList.remove('open'));
+        }
+    });
+
+    function toggleDropdown(id) {
+        if (sidebar.classList.contains('sidebar-collapsed')) {
+            collapseBtn.click();
+            setTimeout(() => {
+                document.getElementById(id)?.classList.add('open');
+            }, 250);
+            return;
+        }
+        const el = document.getElementById(id);
+        if (el) {
+            const isOpen = el.classList.contains('open');
+            dropdowns.forEach(drop => drop.classList.remove('open'));
+            if (!isOpen) el.classList.add('open');
+        }
+    }
+
+    function toggleNotifications() {
+        notificationDropdown.classList.toggle('hidden');
+    }
+
+    function toggleUserDropdown() {
+        userDropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!notificationDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+            notificationDropdown.classList.add('hidden');
+        }
+        if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+            userDropdown.classList.add('hidden');
+        }
+    });*/
+</script>
